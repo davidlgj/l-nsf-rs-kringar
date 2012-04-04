@@ -6,6 +6,8 @@ var request = require('request');
 var url_client       = 'https://mobil.lansforsakringar.se/appoutlet/security/client';
 var url_user         = 'https://mobil.lansforsakringar.se/appoutlet/security/user';
 var url_transactions = 'https://mobil.lansforsakringar.se/appoutlet/account/transaction';
+var url_bytype       = 'https://mobil.lansforsakringar.se/appoutlet/account/bytype';
+var url_bynumber     = 'https://mobil.lansforsakringar.se/appoutlet/account/bynumber';
 
 //Calculate hash is taken from http://blog.sallarp.com/lansforsakringar-api.html
 function calculateLFHash(challenge) {
@@ -27,12 +29,17 @@ function handleReq(fn,err) {
 
     return function (error,response, body) {
         if (!error && response.statusCode == 200) {
+            //console.log(body)
             if (_.isString(body)) {
                 fn(JSON.parse(body));
             } else {
                 fn(body);
             }
         } else {
+            //console.log("Error!")
+            //console.log(body)
+            //console.log(error)
+            //console.log(response.statusCode)
             if (err) {
                 err(error,response,body);
             } 
@@ -49,14 +56,15 @@ function list(ctoken,utoken,account,page,callback,error) {
         callback = page;
         page = 0;        
     }
-
-    request.post({
+    var obj = {
                     url: url_transactions,
                     headers: { 'ctoken': ctoken, 'utoken': utoken, 'DeviceId': 'f8280cf34708c7b5a8bd2ed93dcd3c8148d00000'},
                     json: {"requestedPage":page,"ledger":"DEPIOSIT","accountNumber":account}
-                 },
+                 };
+                 //console.log(obj)
+    request.post(obj,
                  handleReq(function(val){ callback(val); },error)
-   });
+   );
 }  
 
 
@@ -64,7 +72,7 @@ function list(ctoken,utoken,account,page,callback,error) {
 function listAll(ctoken,utoken,account,page,callback,error) {
     var transactions = [];
     //first page
-    var recurse = function ctoken,utoken,account,page,callback,error) {
+    var recurse = function(ctoken,utoken,account,page,callback,error) {
         list(ctoken,utoken,account,page,function(val){
             transactions.push(val.transactions);
             if (val.hasMore) {
@@ -74,11 +82,40 @@ function listAll(ctoken,utoken,account,page,callback,error) {
             }
         },error);
     }
+    
+    //start it off
+    recurse(ctoken,utoken,account,0,callback,error);
 }
 
 
 
-//TODO: accounts function
+function accounts(ctoken,utoken,callback,error) {
+
+    request.post({
+                    url: url_bytype,
+                    headers: { ctoken: ctoken, utoken: utoken,"DeviceId": "f8280cf34708c7b5a8bd2ed93dcd3c8148d00000"},
+                    json: {"accountType":"SAVING | CHECKING"}
+                  },
+                  handleReq(function(val){
+                    if (val.accounts) {
+                        callback(val.accounts);
+                    } else {
+                        callback(val);
+                    }
+                  },error)); 
+}
+
+function account(ctoken,utoken,account_nr,callback,error) {
+
+    request.post({
+                    url: url_bynumber,
+                    headers: { ctoken: ctoken, utoken: utoken,"DeviceId": "f8280cf34708c7b5a8bd2ed93dcd3c8148d00000"},
+                    json: { "accountNumber": account_nr }
+                  },
+                  handleReq(function(val){
+                    callback(val);
+                  },error)); 
+}
 
 
 
@@ -105,11 +142,13 @@ exports.login = function(ssn,pin,callback,error) {
                         var utoken = val.ticket;
                         //we've logged in return the connection object                        
                         callback({
-                            utoken: utoken,
-                            ctoken: ctoken,
-                            accounts: function (callback,error) { accounts(utoken,ctoken,error); },
-                            list: function (account_nr,page,callback,error) { list(utoken,ctoken,account_nr,page,callback,error); },
-                            listAll: function (account_nr,callback,error) { listAll(utoken,ctoken,account_nr,callback,error); }
+                            utoken:   utoken,
+                            ctoken:   ctoken,
+                            account:  function (account_nr,callback,error) { account(ctoken,utoken,account_nr,callback,error); },
+                            accounts: function (callback,error) { accounts(ctoken,utoken,callback,error); },
+                            list:     function (account_nr,page,callback,error) { list(ctoken,utoken,account_nr,page,callback,error); },
+                            listAll:  function (account_nr,callback,error) { listAll(ctoken,utoken,account_nr,callback,error); }
+                            
                             
                         });                        
                     },error));
