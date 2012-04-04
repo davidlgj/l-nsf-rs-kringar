@@ -2,7 +2,7 @@
   "author": "David Jensen <david.lgj@gmail.com> (burningbroccoli.se)",
   "name": "länsförsäkringar",
   "description": "A module wrapping the Swedish bank Länsförsäkringar's JSON API",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": {
     "url": ""
   },
