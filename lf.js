@@ -86,7 +86,7 @@ function list(ctoken,utoken,account,page,callback,error) {
 
 
 
-function listAll(ctoken,utoken,account,page,callback,error) {
+function listAll(ctoken,utoken,account,callback,error) {
     var transactions = [];
     //first page
     var recurse = function(ctoken,utoken,account,page,callback,error) {

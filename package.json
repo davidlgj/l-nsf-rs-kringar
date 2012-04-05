@@ -4,7 +4,7 @@
   "description": "A module wrapping the Swedish bank Länsförsäkringar's JSON API",
   "version": "0.0.1",
   "repository": {
-    "type": "git"
+    "type": "git",
     "url": "git@github.com:davidlgj/l-nsf-rs-kringar.git"
   },
   "main": "lf.js",

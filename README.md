@@ -10,17 +10,19 @@ This Module wraps part of that API.
 
 ```javascript
 
-require('länsförsäkringar').login('0000000000','0000',function(lf) {
+require('länsförsäkringar').login('0000000000','0000',function(lf){
     console.log("Logged in");
-    //list accounts
-    lf.accounts(console.log);
     
-    //account details
-    lf.account("12345678910",console.log);
-        
-    //list all transactions of a account
-    lf.listAll("12345678910",console.log,function(error){ console.log('Error:'+error) });
-        
+    //list accounts
+    lf.accounts(function(accounts){
+        accounts.forEach(function(a){        
+            //get account details
+            lf.account(a.accountNumber,console.log);
+            
+            //list all transactions
+            lf.listAll(a.accountNumber,console.log);
+        });
+    });
 });
 
 
