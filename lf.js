@@ -111,7 +111,7 @@ function accounts(ctoken,utoken,callback,error) {
     request.post({
                     url: url_bytype,
                     headers: { ctoken: ctoken, utoken: utoken,"DeviceId": "f8280cf34708c7b5a8bd2ed93dcd3c8148d00000"},
-                    json: {"accountType":"SAVING | CHECKING"}
+                    json: {"accountType":"CHECKING"}
                   },
                   handleReq(function(val){
                     if (val.accounts) {
