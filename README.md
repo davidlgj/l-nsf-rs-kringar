@@ -14,7 +14,7 @@ require('länsförsäkringar').login('0000000000','0000',function(lf){
     console.log("Logged in");
     
     //list accounts
-    lf.accounts(function(accounts){
+    lf.accounts('CHECKING',function(accounts){
         accounts.forEach(function(a){        
             //get account details
             lf.account(a.accountNumber,console.log);
